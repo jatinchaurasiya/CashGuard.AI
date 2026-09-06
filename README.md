@@ -30,19 +30,24 @@ When an invoice is paid partially, paid late, or delayed due to an email thread 
 
 ```text
 cashguard.ai/
-├── .env.example       # Template for your private API keys (never commit real keys!)
-├── .gitignore         # Tells Git which temporary/secret files to ignore
-├── config.py          # Central configuration: defines active model, fallback chain & backoff
-├── llm.py             # Resilient OpenRouter provider (fallbacks, 429 retries & logging)
-├── test_connection.py # Quick test script to verify connection & check served model
-├── requirements.txt   # List of Python packages required to run the project
-├── main.py            # Entry point: runs CashGuard reconciliation on sample data
-├── data/              # Realistic synthetic demo datasets for Priya (graphic designer)
+├── .env.example         # Template for your private API keys (never commit real keys!)
+├── .gitignore           # Tells Git which temporary/secret files to ignore
+├── config.py            # Central configuration: defines active model, fallback chain & backoff
+├── llm.py               # Resilient OpenRouter provider (fallbacks, 429 retries & logging)
+├── tools/               # Strands Agent Tools
+│   ├── monitor.py       # Monitor Tool: loads and monitors financial feeds
+│   └── matcher.py       # Matching Tool: deterministic reconciliation & silence/escalate logic
+├── test_connection.py   # Quick test script to verify LLM connection & check served model
+├── test_monitor_tool.py # Test script to verify monitor tool file parsing
+├── test_matcher_tool.py # Test script to verify deterministic arithmetic & classification
+├── requirements.txt     # List of Python packages required to run the project
+├── main.py              # Entry point: runs CashGuard reconciliation on sample data
+├── data/                # Realistic synthetic demo datasets for Priya (graphic designer)
 │   ├── invoices.json
 │   ├── bank_feed.csv
 │   └── client_emails.json
-├── README.md          # Project documentation and guide (this file)
-└── LICENSE            # MIT Open Source License
+├── README.md            # Project documentation and guide (this file)
+└── LICENSE              # MIT Open Source License
 ```
 
 ---

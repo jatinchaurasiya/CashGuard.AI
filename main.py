@@ -50,13 +50,13 @@ def run_sample_guardian():
         print("3. Run this script again: python main.py\n")
         sys.exit(1)
 
-    # 2. Initialize the Strands Agent with the Monitor Tool
+    # 2. Initialize the Strands Agent with the Monitor and Matching Tools
     from strands import Agent
-    from tools.monitor import monitor_financial_feeds
+    from tools import monitor_financial_feeds, match_invoices_to_bank_feed
 
     guardian_agent = Agent(
         model=model,
-        tools=[monitor_financial_feeds],
+        tools=[monitor_financial_feeds, match_invoices_to_bank_feed],
         system_prompt=CASHGUARD_SYSTEM_PROMPT,
     )
 
@@ -98,15 +98,14 @@ Please reconcile the following freelancer data across Invoices, Bank Feed, and C
 
 ---
 YOUR INSTRUCTIONS:
-1. Reconcile each invoice with the bank feed and client emails.
-2. Flag all exceptions:
-   - Identify which invoice was only partially paid and explain why based on emails.
-   - Identify the overdue invoice with no matching deposit and explain the client's extension request.
-   - Investigate the client claiming a duplicate payment and determine if the bank feed actually shows two payments or only one.
-   - Flag any fee discrepancies (e.g. wire fee deduction) or unmatched deposits.
-   - Ignore unrelated personal/business expenses (rent, groceries, SaaS subscriptions).
-3. Provide an executive cash-flow health summary (total outstanding, expected incoming).
-4. Draft ready-to-send email responses for Priya to send to clients with exceptions.
+1. Use your matching tool (`match_invoices_to_bank_feed`) to perform deterministic arithmetic and date matching.
+2. Maintain SILENCE on routine matches (MATCHED and PENDING) — do not overwhelm the freelancer with invoices that are already settled or within normal terms.
+3. ESCALATE only the true judgment calls:
+   - [PARTIAL]: Analyze partial payments (Nexa Health Labs milestone terms, Pulse Dynamics $25 wire fee).
+   - [UNMATCHED]: Follow up on overdue invoices (BrightPath Academy board delay).
+   - [DUPLICATE_CLAIM]: Investigate the duplicate payment claim (UrbanBite Chef Mateo claims 2 payments, but only 1 exists in bank feed — warn Priya NOT to refund!).
+   - [UNMATCHED DEPOSIT]: Note the $350 mystery deposit from Stripe.
+4. Provide an executive cash-flow health summary and draft ready-to-send email responses for Priya for each escalated case.
 """
     else:
         # Fallback minimal scenario if data files are missing
