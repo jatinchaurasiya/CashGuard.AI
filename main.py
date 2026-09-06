@@ -50,11 +50,13 @@ def run_sample_guardian():
         print("3. Run this script again: python main.py\n")
         sys.exit(1)
 
-    # 2. Initialize the Strands Agent
+    # 2. Initialize the Strands Agent with the Monitor Tool
     from strands import Agent
+    from tools.monitor import monitor_financial_feeds
 
     guardian_agent = Agent(
         model=model,
+        tools=[monitor_financial_feeds],
         system_prompt=CASHGUARD_SYSTEM_PROMPT,
     )
 
@@ -115,8 +117,9 @@ YOUR INSTRUCTIONS:
 
     try:
         response = guardian_agent(scenario)
+        served_model = getattr(model, "last_served_model", get_model_id())
         print("-" * 70)
-        print(" GUARDIAN RECONCILIATION REPORT")
+        print(f" GUARDIAN RECONCILIATION REPORT (Served by: {served_model})")
         print("-" * 70)
         print(response)
         print("-" * 70)
