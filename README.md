@@ -50,7 +50,10 @@ cashguard.ai/
 ├── test_reasoning_layer.py  # Test suite verifying WhatsApp alerts, natural language interpretation & draft tool contract
 ├── test_approval_and_audit.py # Test suite verifying human approval gate & responsible AI audit logging
 ├── requirements.txt     # List of Python packages required to run the project
-├── main.py              # Entry point: runs CashGuard reconciliation on sample data
+├── run_scan.py          # Master single-command end-to-end scan pipeline (Monitor -> Match -> Prioritize -> Chat -> Audit)
+├── app.py               # Simulated WhatsApp Web UI (Starlette + Uvicorn) for demo video
+├── chat_cli.py          # Simulated WhatsApp interactive terminal chat
+├── main.py              # Strands Agent sample reconciliation runner
 ├── data/                # Realistic synthetic demo datasets for Priya (graphic designer)
 │   ├── invoices.json
 │   ├── bank_feed.csv
@@ -101,13 +104,26 @@ Confirm that your connection works, test rate-limit resilience, and see which mo
 python test_connection.py
 ```
 
-### 6. Run the Full Reconciliation Agent!
-Run the main CashGuard agent on the realistic demo datasets:
+### 6. Run the End-to-End Scan Pipeline!
+Run the single-command interactive guardian scan:
 ```bash
-python main.py
+python run_scan.py
 ```
 
-The script will simulate a real-world freelance scenario (an overdue invoice, a partial bank deposit, and an accounting email explaining milestone payment terms) and output the AI agent's reconciliation analysis and drafted follow-up.
+This single command wires the entire flow:
+1. **Monitor Tool**: Ingests invoices, bank feeds, and client emails.
+2. **Matching Tool**: Deterministically separates silent routine matches from escalations.
+3. **Prioritizer Tool**: Ranks exceptions by `(amount) x (days overdue)`.
+4. **Reasoning Engine**: Generates WhatsApp alerts & interprets your plain-text instructions.
+5. **Human-Approval Gate**: Solicits your explicit confirmation before marking sent.
+6. **Executive Summary**: Outputs silent resolutions, flagged items, and total cash at risk.
+
+### 7. Run the Simulated WhatsApp Web UI (for Demo Video)
+To show a pixel-perfect simulated WhatsApp Web interface with dark theme and live audit log:
+```bash
+python app.py
+```
+Open **`http://localhost:8000`** in your browser to record your demo video!
 
 ---
 
