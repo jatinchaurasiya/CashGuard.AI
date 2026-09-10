@@ -50,13 +50,21 @@ def run_sample_guardian():
         print("3. Run this script again: python main.py\n")
         sys.exit(1)
 
-    # 2. Initialize the Strands Agent with the Monitor and Matching Tools
+    # 2. Initialize the Strands Agent with the Monitor, Matching, and Prioritizer Tools
     from strands import Agent
-    from tools import monitor_financial_feeds, match_invoices_to_bank_feed
+    from tools import (
+        monitor_financial_feeds,
+        match_invoices_to_bank_feed,
+        prioritize_cash_impact,
+    )
 
     guardian_agent = Agent(
         model=model,
-        tools=[monitor_financial_feeds, match_invoices_to_bank_feed],
+        tools=[
+            monitor_financial_feeds,
+            match_invoices_to_bank_feed,
+            prioritize_cash_impact,
+        ],
         system_prompt=CASHGUARD_SYSTEM_PROMPT,
     )
 
@@ -99,13 +107,15 @@ Please reconcile the following freelancer data across Invoices, Bank Feed, and C
 ---
 YOUR INSTRUCTIONS:
 1. Use your matching tool (`match_invoices_to_bank_feed`) to perform deterministic arithmetic and date matching.
-2. Maintain SILENCE on routine matches (MATCHED and PENDING) — do not overwhelm the freelancer with invoices that are already settled or within normal terms.
-3. ESCALATE only the true judgment calls:
-   - [PARTIAL]: Analyze partial payments (Nexa Health Labs milestone terms, Pulse Dynamics $25 wire fee).
-   - [UNMATCHED]: Follow up on overdue invoices (BrightPath Academy board delay).
-   - [DUPLICATE_CLAIM]: Investigate the duplicate payment claim (UrbanBite Chef Mateo claims 2 payments, but only 1 exists in bank feed — warn Priya NOT to refund!).
+2. Use your prioritization tool (`prioritize_cash_impact`) to rank all exceptions by Cash Impact Score: (amount) x (days overdue), surfacing highest impact first.
+3. Maintain SILENCE on routine matches (MATCHED and PENDING) — do not overwhelm the freelancer with invoices that are already settled or within normal terms.
+4. ESCALATE only the true judgment calls in the exact ranked order determined by the prioritizer:
+   - [Rank #1 - CRITICAL]: Nexa Health Labs (milestone payment terms and balance).
+   - [Rank #2 - CRITICAL]: BrightPath Academy (overdue board sign-off follow-up).
+   - [Rank #3 - HIGH]: UrbanBite Chef Mateo duplicate payment claim (warn Priya NOT to refund!).
+   - [Rank #4 - LOW]: Pulse Dynamics ($25 wire fee deduction analysis).
    - [UNMATCHED DEPOSIT]: Note the $350 mystery deposit from Stripe.
-4. Provide an executive cash-flow health summary and draft ready-to-send email responses for Priya for each escalated case.
+5. Provide an executive cash-flow health summary and draft ready-to-send email responses for Priya for each escalated case in ranked order.
 """
     else:
         # Fallback minimal scenario if data files are missing

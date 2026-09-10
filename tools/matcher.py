@@ -262,12 +262,15 @@ def match_invoices_to_bank_feed(
             
             # Count actual deposits found for this invoice/client
             actual_count = len(candidate_deposits)
+            days_overdue = max(0, (as_of - due_d).days) if due_d else 0
             record = {
                 "invoice_id": invoice_id,
                 "client_name": client_name,
                 "amount": inv_amount,
                 "status": "DUPLICATE_CLAIM",
                 "resolution": "escalate",
+                "due_date": str(due_d) if due_d else None,
+                "days_overdue": days_overdue,
                 "matched_transaction_id": matched_id,
                 "email_id": email_claim["email_id"],
                 "explanation": (
@@ -307,6 +310,7 @@ def match_invoices_to_bank_feed(
             deposit_amt = best_partial["amount_float"]
             diff = round(inv_amount - deposit_amt, 2)
             used_transaction_ids.add(tx_id)
+            days_overdue = max(0, (as_of - due_d).days) if due_d else 0
 
             record = {
                 "invoice_id": invoice_id,
@@ -314,6 +318,8 @@ def match_invoices_to_bank_feed(
                 "amount": inv_amount,
                 "status": "PARTIAL",
                 "resolution": "escalate",
+                "due_date": str(due_d) if due_d else None,
+                "days_overdue": days_overdue,
                 "matched_transaction_id": tx_id,
                 "deposit_date": best_partial.get("date"),
                 "amount_received": deposit_amt,
