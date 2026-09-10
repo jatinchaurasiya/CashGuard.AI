@@ -92,8 +92,8 @@ def run_test():
         print("-" * 72)
         print(f"• Model that served request: {served_model}")
         print(f"• Round-trip response time:  {elapsed:.2f} seconds")
-        print("\n• Model Response:\n")
-        print(f"\"{response.strip()}\"")
+        text_response = getattr(response, "text", None) or getattr(response, "content", None) or str(response)
+        print(f"\"{text_response.strip()}\"")
         print("-" * 72)
 
         if served_model == primary_model:
