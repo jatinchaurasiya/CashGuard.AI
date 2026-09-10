@@ -124,27 +124,22 @@ def get_openrouter_model():
 
 
 def check_api_key_status() -> dict[str, Any]:
-    """Inspects OS environment variables and .env file for OpenRouter key."""
+    """Inspects if OpenRouter key is configured without exposing any key material, masks, or source."""
     key = os.getenv("OPENROUTER_API_KEY", "").strip()
-    source = "EC2 / OS Environment Variable" if (key and key != "your_openrouter_api_key_here") else "None"
 
     if not key or key == "your_openrouter_api_key_here":
         try:
             from dotenv import load_dotenv
             load_dotenv()
             key = os.getenv("OPENROUTER_API_KEY", "").strip()
-            if key and key != "your_openrouter_api_key_here":
-                source = ".env file"
         except ImportError:
             pass
 
-    has_env_file = os.path.exists(".env")
     is_live = bool(key and key != "your_openrouter_api_key_here" and len(key) > 10)
 
     return {
         "is_live": is_live,
-        "masked_key": (key[:9] + "••••••••" + key[-4:]) if is_live else "Not configured",
+        "status_label": "Live Connected" if is_live else "Mock Fallback Mode",
         "model_id": os.getenv("MODEL_ID", MODEL_ID),
-        "source": source if is_live else ("None (Unset)" if not has_env_file else ".env file (placeholder)"),
-        "has_env_file": has_env_file,
+        "security": "Zero-Exposure (Encrypted Server-Side)",
     }

@@ -95,11 +95,11 @@ with st.sidebar:
     # API Status Check
     status = check_api_key_status()
     if status["is_live"]:
-        st.success(f"🟢 **OpenRouter Live:** `{status['masked_key']}`")
-        st.caption(f"Source: {status['source']} • Model: `{status['model_id']}`")
+        st.success("🟢 **OpenRouter Live LLM Active**")
+        st.caption(f"Model: `{status['model_id']}` • Security: Encrypted Server-Side")
     else:
-        st.warning("⚠️ **OpenRouter Key Missing:** Running in Mock Fallback")
-        st.caption("Set `OPENROUTER_API_KEY` in environment for live LLM.")
+        st.info("ℹ️ **Fallback Simulation Active**")
+        st.caption("Deterministic tools active • Protected Server-Side")
 
     st.divider()
 

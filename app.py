@@ -1027,7 +1027,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           CashGuard.AI uses <strong>OpenRouter's zero-cost free tier</strong> (<code>openrouter/free</code>) and the <strong>AWS Strands Agents SDK</strong>.
         </p>
 
-        <div style="background: var(--clay-surface-soft); border: 1px solid var(--clay-hairline); border-radius: var(--rounded-md); padding: 16px; margin-bottom: 20px;">
+        <div style="background: var(--clay-surface-soft); border: 1px solid var(--clay-hairline); border-radius: var(--rounded-md); padding: 16px; margin-bottom: 16px;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;">
             <span style="font-weight: 600;">Status:</span>
             <span id="modalApiStatus" style="font-weight: 700;">Checking...</span>
@@ -1036,27 +1036,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <span style="font-weight: 600;">Active Model:</span>
             <span id="modalApiModel" style="font-family: monospace;">openrouter/free</span>
           </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;">
-            <span style="font-weight: 600;">Config Source:</span>
-            <span id="modalApiSource">.env file</span>
-          </div>
           <div style="display: flex; justify-content: space-between; font-size: 13px;">
-            <span style="font-weight: 600;">Key Mask:</span>
-            <span id="modalApiKeyMask" style="font-family: monospace;">Not loaded</span>
+            <span style="font-weight: 600;">Security:</span>
+            <span id="modalApiSecurity" style="font-weight: 700; color: var(--clay-success);">Zero-Exposure (Server-Side)</span>
           </div>
         </div>
 
-        <div style="font-size: 13px; line-height: 1.5; color: var(--clay-body); margin-bottom: 20px;">
-          <strong>How to activate Live LLM:</strong>
-          <ol style="margin-left: 20px; margin-top: 6px;">
-            <li>Copy <code>.env.example</code> to <code>.env</code> in the project directory.</li>
-            <li>Add your OpenRouter key: <code>OPENROUTER_API_KEY=sk-or-v1-...</code></li>
-            <li>Click the button below to re-read <code>.env</code> without restarting!</li>
-          </ol>
+        <div style="font-size: 12.5px; line-height: 1.5; color: var(--clay-body); margin-bottom: 16px; background: rgba(34, 197, 94, 0.06); padding: 12px 14px; border-radius: var(--rounded-md); border: 1px dashed var(--clay-success);">
+          🔒 <strong>Zero-Exposure Security Guarantee:</strong> All API keys, cloud credentials, and environment configurations are strictly isolated on the backend server. No private credentials, key fragments, or paths are ever transmitted to the browser client.
         </div>
 
-        <button class="btn-clay-primary" onclick="reloadApiKeyFromEnv()" style="width: 100%;">
-          <span>↻</span> Re-read .env & Connect Live LLM
+        <button class="btn-clay-secondary" onclick="reloadApiKeyFromEnv()" style="width: 100%;">
+          <span>↻</span> Refresh Backend Connection
         </button>
       </div>
     </div>
@@ -1292,13 +1283,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           txt.innerText = "OpenRouter Live LLM Active";
         } else {
           dot.className = "status-dot-yellow";
-          txt.innerText = "Demo Simulation (.env ready)";
+          txt.innerText = "Fallback Simulation Active";
         }
 
-        document.getElementById("modalApiStatus").innerText = data.is_live ? "Live Connected" : "Resilient Fallback Active";
+        document.getElementById("modalApiStatus").innerText = data.is_live ? "Live Connected" : "Mock Fallback Active";
         document.getElementById("modalApiModel").innerText = data.model_id;
-        document.getElementById("modalApiSource").innerText = data.source;
-        document.getElementById("modalApiKeyMask").innerText = data.masked_key;
+        document.getElementById("modalApiSecurity").innerText = data.security || "Zero-Exposure (Server-Side)";
       } catch (err) {
         console.error("API status check error:", err);
       }
@@ -1309,10 +1299,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         const res = await fetch("/api/status/reload", { method: "POST" });
         const data = await res.json();
         await checkApiStatus();
-        alert(data.is_live ? "Connected to live OpenRouter LLM!" : "Checked .env. No valid key found; using resilient mock mode.");
+        alert(data.is_live ? "Connected to live OpenRouter LLM!" : "Checked backend environment. Using resilient mock fallback mode.");
         closeModal('apiModal');
       } catch (err) {
-        alert("Error reloading .env configuration.");
+        alert("Error refreshing backend connection.");
       }
     }
 
