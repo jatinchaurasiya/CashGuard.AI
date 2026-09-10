@@ -10,6 +10,7 @@ from .monitor import monitor_financial_feeds
 from .matcher import match_invoices_to_bank_feed
 from .prioritizer import prioritize_cash_impact
 from .drafter import draft_message, get_staged_drafts, clear_staged_drafts
+from .approval_gate import human_approval_gate, request_interactive_approval
 
 __all__ = [
     "monitor_financial_feeds",
@@ -18,4 +19,6 @@ __all__ = [
     "draft_message",
     "get_staged_drafts",
     "clear_staged_drafts",
+    "human_approval_gate",
+    "request_interactive_approval",
 ]

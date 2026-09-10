@@ -90,6 +90,22 @@ def draft_message(
 
     _STAGED_DRAFTS.append(draft_record)
 
+    from audit_logger import audit_logger
+
+    audit_logger.log_event(
+        event_type="DRAFT_STAGED",
+        action_taken=f"Created {recipient_type} {channel} draft {draft_id}",
+        reasoning_summary=(
+            f"Staged {message_type} draft for {invoice_id} ({client_name}). "
+            f"Action intent: '{action_intent or 'Alert to freelancer'}'. "
+            f"Safety enforcement: Message staged as text only; NEVER sent automatically."
+        ),
+        invoice_id=invoice_id,
+        client_name=client_name,
+        principle="Human-in-the-Loop Oversight & Safety",
+        metadata={"draft_id": draft_id, "sent": False, "channel": channel},
+    )
+
     logger.info(
         f"[DraftTool] Staged {draft_record['recipient_type']} draft {draft_id} via {draft_record['channel']} "
         f"for {invoice_id} ({client_name}). [Sent: False]"

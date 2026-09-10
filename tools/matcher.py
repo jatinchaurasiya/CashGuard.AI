@@ -23,6 +23,7 @@ from typing import Any
 from strands import tool
 
 from .monitor import monitor_financial_feeds
+from audit_logger import audit_logger
 
 logger = logging.getLogger("CashGuard.Tools.Matcher")
 
@@ -283,6 +284,15 @@ def match_invoices_to_bank_feed(
                 used_transaction_ids.add(matched_id)
             escalations.append(record)
             all_results.append(record)
+            audit_logger.log_event(
+                event_type="EXCEPTION_ESCALATION",
+                action_taken=f"Escalated duplicate claim for {invoice_id} ({client_name})",
+                reasoning_summary=record["explanation"],
+                invoice_id=invoice_id,
+                client_name=client_name,
+                principle="Harm Prevention / Block Accidental Refund",
+                metadata={"status": "DUPLICATE_CLAIM", "amount": inv_amount},
+            )
             continue
 
         # CASE B: High confidence exact match (MATCHED - Resolve Silently)
@@ -302,6 +312,15 @@ def match_invoices_to_bank_feed(
             }
             silent_matches.append(record)
             all_results.append(record)
+            audit_logger.log_event(
+                event_type="SILENT_RESOLUTION",
+                action_taken=f"Resolved invoice {invoice_id} ({client_name}) silently as MATCHED",
+                reasoning_summary=record["explanation"] + " Routine match requires no human interruption.",
+                invoice_id=invoice_id,
+                client_name=client_name,
+                principle="Noise Reduction & Accuracy",
+                metadata={"status": "MATCHED", "amount": inv_amount, "matched_transaction_id": tx_id},
+            )
             continue
 
         # CASE C: Partial payment or fee discrepancy (PARTIAL - Escalate for LLM judgment)
@@ -331,6 +350,15 @@ def match_invoices_to_bank_feed(
             }
             escalations.append(record)
             all_results.append(record)
+            audit_logger.log_event(
+                event_type="EXCEPTION_ESCALATION",
+                action_taken=f"Escalated partial payment on {invoice_id} ({client_name})",
+                reasoning_summary=record["explanation"],
+                invoice_id=invoice_id,
+                client_name=client_name,
+                principle="Cash Flow Protection",
+                metadata={"status": "PARTIAL", "invoiced": inv_amount, "received": deposit_amt, "variance": diff},
+            )
             continue
 
         # CASE D0: Client email claims paid, but no matching bank transaction exists (DUPLICATE_CLAIM - Escalate)
@@ -351,6 +379,15 @@ def match_invoices_to_bank_feed(
             }
             escalations.append(record)
             all_results.append(record)
+            audit_logger.log_event(
+                event_type="EXCEPTION_ESCALATION",
+                action_taken=f"Escalated unverified payment claim for {invoice_id} ({client_name})",
+                reasoning_summary=record["explanation"],
+                invoice_id=invoice_id,
+                client_name=client_name,
+                principle="Financial Verification",
+                metadata={"status": "DUPLICATE_CLAIM", "amount": inv_amount},
+            )
             continue
 
         # CASE D: Overdue with no matching payment (UNMATCHED - Escalate)
@@ -373,6 +410,15 @@ def match_invoices_to_bank_feed(
             }
             escalations.append(record)
             all_results.append(record)
+            audit_logger.log_event(
+                event_type="EXCEPTION_ESCALATION",
+                action_taken=f"Escalated overdue invoice {invoice_id} ({client_name})",
+                reasoning_summary=record["explanation"],
+                invoice_id=invoice_id,
+                client_name=client_name,
+                principle="Timely Cash Collection",
+                metadata={"status": "UNMATCHED", "amount": inv_amount, "days_overdue": days_overdue},
+            )
             continue
 
         # CASE E: Not yet due (PENDING - Silent)
@@ -388,6 +434,15 @@ def match_invoices_to_bank_feed(
         }
         silent_matches.append(record)
         all_results.append(record)
+        audit_logger.log_event(
+            event_type="SILENT_RESOLUTION",
+            action_taken=f"Resolved invoice {invoice_id} ({client_name}) silently as PENDING",
+            reasoning_summary=record["explanation"] + " Within normal terms; avoiding unnecessary alerts.",
+            invoice_id=invoice_id,
+            client_name=client_name,
+            principle="Noise Reduction",
+            metadata={"status": "PENDING", "amount": inv_amount, "due_date": str(due_d)},
+        )
 
     # 4. Identify any unmatched incoming bank deposits
     unmatched_bank_deposits = [

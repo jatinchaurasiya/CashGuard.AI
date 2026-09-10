@@ -59,7 +59,7 @@ def run_sample_guardian():
         print("3. Run this script again: python main.py\n")
         sys.exit(1)
 
-    # 2. Initialize the Strands Agent with the Monitor, Matching, Prioritizer, and Drafter Tools
+    # 2. Initialize the Strands Agent with all 5 Core Tools
     from strands import Agent
     from tools import (
         monitor_financial_feeds,
@@ -67,6 +67,7 @@ def run_sample_guardian():
         prioritize_cash_impact,
         draft_message,
         get_staged_drafts,
+        human_approval_gate,
     )
     from reasoning import CashGuardReasoningEngine
 
@@ -77,6 +78,7 @@ def run_sample_guardian():
             match_invoices_to_bank_feed,
             prioritize_cash_impact,
             draft_message,
+            human_approval_gate,
         ],
         system_prompt=CASHGUARD_SYSTEM_PROMPT,
     )
@@ -203,10 +205,29 @@ def demonstrate_reasoning_flow():
         print(f"   Action Intent: {action.get('action_intent')}")
         print(f"   Subject:       {action.get('subject')}")
         print(f"   Body:\n" + "\n".join("      " + line for line in action.get('content', '').splitlines()))
+
+        # Step 4: Human-Approval Gate (Explicit authorization required before sending)
+        draft_id = action.get("draft_id")
+        if draft_id:
+            from tools.approval_gate import human_approval_gate
+            # Demonstrate explicit human confirmation
+            gate_res = human_approval_gate(
+                draft_id=draft_id,
+                confirmed=True,
+                approved_by="Priya",
+                human_notes="Verified by Priya via WhatsApp",
+            )
+            print(f"\n🛡️  Human-Approval Gate Result for {draft_id}:")
+            print(f"   Outcome:        {gate_res.get('status').upper()} [Sent: {gate_res.get('sent')}]")
+            print(f"   Approved By:    {gate_res.get('approved_by')}")
+            print(f"   Audit Message:  {gate_res.get('message')}")
         print("-" * 70)
 
+    from audit_logger import JSONL_LOG_PATH, MD_LOG_PATH
     staged = get_staged_drafts()
-    print(f"\n[+] Total Staged Drafts in Memory: {len(staged)} (All marked sent: False)")
+    print(f"\n[+] Total Staged Drafts in Session: {len(staged)}")
+    print(f"[+] Append-Only Machine Audit Log:  {JSONL_LOG_PATH}")
+    print(f"[+] Responsible AI Audit Table:     {MD_LOG_PATH}")
     print("=" * 70)
 
 
