@@ -10,22 +10,31 @@ import sys
 from config import get_openrouter_model, get_model_id
 
 # System prompt defining the agent's persona and objective
+# System prompt defining the agent's persona and objective
 CASHGUARD_SYSTEM_PROMPT = """
 You are CashGuard, an intelligent AI Cash-Flow Guardian built for solo freelancers.
 Your mission is to protect the freelancer's cash flow by reconciling their issued invoices
 against bank transactions and client email communications.
 
-Your responsibilities:
-1. Identify Invoice Exceptions:
-   - Invoices that are past due without payment.
-   - Partial payments (e.g., invoiced $2,500, but only $2,000 received).
-   - Unmatched bank deposits (money received without a clear invoice).
-   - Invoices where the client emailed an explanation, promise date, or dispute.
+Your Workflow & Tool-Calling Protocol:
+1. Reconcile & Prioritize:
+   - Use `match_invoices_to_bank_feed` to find discrepancies.
+   - Maintain silence on routine matches (`MATCHED` and `PENDING`).
+   - Use `prioritize_cash_impact` to rank actionable exceptions (`PARTIAL`, `UNMATCHED`, `DUPLICATE_CLAIM`) by (amount) x (days overdue).
 
-2. Provide Clear, Actionable Recommendations:
-   - Status summary (Paid in Full, Pending, Discrepancy, Overdue).
-   - Recommended next step (e.g., send polite reminder, reconcile partial payment, follow up on promise date).
-   - A friendly, ready-to-send draft email or message for the client if action is needed.
+2. WhatsApp-Style Alerts for Freelancer:
+   - For each prioritized exception, use the `draft_message` tool with:
+     recipient_type="freelancer", channel="whatsapp", message_type="alert"
+   - Write a short, plain-language message describing the situation and asking what they would like to do.
+     Example: "Client X's payment is $50 short of Invoice #12 — could be a bank fee or a partial payment. What would you like to do?"
+
+3. Interpret User Reply & Stage Next Action:
+   - When the freelancer replies with a natural-language instruction (e.g. "send a reminder", "let it go", "ask for the missing $50", "refuse refund until Chase clears it"):
+     - Accurately interpret their intent.
+     - Call `draft_message` with:
+       recipient_type="client", channel="email", action_intent=<user_instruction>
+     - Draft the professional action text (e.g. reminder email, fee waiver note, polite clarification question, refund refusal warning).
+     - NEVER send the message; strictly stage it as a draft for the freelancer's review.
 
 Always communicate with clarity, empathy, and professional precision.
 """
@@ -50,13 +59,16 @@ def run_sample_guardian():
         print("3. Run this script again: python main.py\n")
         sys.exit(1)
 
-    # 2. Initialize the Strands Agent with the Monitor, Matching, and Prioritizer Tools
+    # 2. Initialize the Strands Agent with the Monitor, Matching, Prioritizer, and Drafter Tools
     from strands import Agent
     from tools import (
         monitor_financial_feeds,
         match_invoices_to_bank_feed,
         prioritize_cash_impact,
+        draft_message,
+        get_staged_drafts,
     )
+    from reasoning import CashGuardReasoningEngine
 
     guardian_agent = Agent(
         model=model,
@@ -64,6 +76,7 @@ def run_sample_guardian():
             monitor_financial_feeds,
             match_invoices_to_bank_feed,
             prioritize_cash_impact,
+            draft_message,
         ],
         system_prompt=CASHGUARD_SYSTEM_PROMPT,
     )
@@ -133,8 +146,68 @@ YOUR INSTRUCTIONS:
         print(response)
         print("-" * 70)
     except Exception as e:
-        print(f"\n[!] Error during agent execution: {e}")
-        print("Please check your internet connection and verify that your OpenRouter API key is valid.")
+        print(f"\n[!] Note on agent full prompt run: {e}")
+
+    # 4. Demonstrate the 3-Step WhatsApp Alert & Tool-Called Action Drafting Loop
+    demonstrate_reasoning_flow()
+
+
+def demonstrate_reasoning_flow():
+    """
+    Demonstrates the 3-step OpenRouter-backed reasoning flow on prioritized exceptions:
+    1. Plain-language WhatsApp alert for freelancer.
+    2. Freelancer natural language response.
+    3. Structured client action drafting via draft_message tool (staged, not sent).
+    """
+    from tools.prioritizer import prioritize_cash_impact
+    from tools.drafter import get_staged_drafts, clear_staged_drafts
+    from reasoning import CashGuardReasoningEngine
+
+    print("\n" + "=" * 70)
+    print(" 💬 CASHGUARD REASONING LAYER — WHATSAPP ALERTS & ACTION DRAFTS")
+    print("=" * 70)
+
+    clear_staged_drafts()
+    engine = CashGuardReasoningEngine.create()
+    priorities = prioritize_cash_impact(as_of_date_str="2026-09-06")
+    ranked = priorities.get("ranked_exceptions", [])
+
+    sample_replies = {
+        "INV-2026-004": "Acknowledge the milestone payment and confirm the remaining $1,500 will be approved after UAT.",
+        "INV-2026-005": "Send a polite follow-up reminder asking if the finance committee approved the disbursement.",
+        "INV-2026-007": "Do not refund! Tell Chef Mateo we only received one transfer and ask for their Chase trace numbers.",
+        "INV-2026-009": "Let it go, $25 is fine to write off as an intermediary wire fee. Mark the invoice settled.",
+    }
+
+    for item in ranked:
+        inv_id = item["invoice_id"]
+        client = item["client_name"]
+        print(f"\n[Rank #{item['rank']} | {item['priority_tier']}] Invoice {inv_id} — {client}")
+        print(f"Impact Score: ${item['impact_score']:,.2f} | Status: {item['status']}")
+
+        # Step 1: Plain-language WhatsApp alert
+        alert_res = engine.write_whatsapp_alert(item)
+        alert = alert_res.get("draft", {})
+        print(f"\n📱 WhatsApp Alert to Priya (Staged Draft {alert.get('draft_id')}):")
+        print(f"   \"{alert.get('content')}\"")
+
+        # Step 2: Freelancer natural-language instruction
+        user_reply = sample_replies.get(inv_id, "Send a polite reminder.")
+        print(f"\n👤 Priya's Reply via WhatsApp:")
+        print(f"   \"{user_reply}\"")
+
+        # Step 3: Interpreted instruction & staged draft action
+        action_res = engine.interpret_reply_and_draft_action(item, user_reply)
+        action = action_res.get("draft", {})
+        print(f"\n✉️  Drafted Action to Client (Staged Draft {action.get('draft_id')} | Sent: {action.get('sent')}):")
+        print(f"   Action Intent: {action.get('action_intent')}")
+        print(f"   Subject:       {action.get('subject')}")
+        print(f"   Body:\n" + "\n".join("      " + line for line in action.get('content', '').splitlines()))
+        print("-" * 70)
+
+    staged = get_staged_drafts()
+    print(f"\n[+] Total Staged Drafts in Memory: {len(staged)} (All marked sent: False)")
+    print("=" * 70)
 
 
 if __name__ == "__main__":

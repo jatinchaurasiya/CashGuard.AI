@@ -37,12 +37,15 @@ cashguard.ai/
 ├── tools/               # Strands Agent Tools
 │   ├── monitor.py       # Monitor Tool: loads and monitors financial feeds
 │   ├── matcher.py       # Matching Tool: deterministic reconciliation & silence/escalate logic
-│   └── prioritizer.py   # Cash-Impact Prioritizer: ranks exceptions by (amount) x (days overdue)
+│   ├── prioritizer.py   # Cash-Impact Prioritizer: ranks exceptions by (amount) x (days overdue)
+│   └── drafter.py       # Draft Message Tool: structured tool-calling for WhatsApp alerts & emails (never sends)
+├── reasoning.py         # OpenRouter-backed reasoning layer: WhatsApp alerts, reply interpretation & action drafting
 ├── test_connection.py   # Quick test script to verify LLM connection & check served model
 ├── test_monitor_tool.py # Test script to verify monitor tool file parsing
 ├── test_matcher_tool.py # Test script to verify deterministic arithmetic & classification
 ├── test_matcher_unit.py # Fast unit test suite verifying the 4 matching outcomes
 ├── test_prioritizer_tool.py # Test script verifying cash-impact ranking calculations
+├── test_reasoning_layer.py  # Test suite verifying WhatsApp alerts, natural language interpretation & draft tool contract
 ├── requirements.txt     # List of Python packages required to run the project
 ├── main.py              # Entry point: runs CashGuard reconciliation on sample data
 ├── data/                # Realistic synthetic demo datasets for Priya (graphic designer)
