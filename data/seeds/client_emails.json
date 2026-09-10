@@ -1,0 +1,92 @@
+[
+  {
+    "email_id": "EML-101",
+    "sender_name": "Marcus Vance",
+    "sender_email": "marcus.vance@solariasolar.com",
+    "client_company": "Solaria Solar Energy",
+    "subject": "Wire initiated for Invoice #INV-2026-002",
+    "received_date": "2026-08-18",
+    "related_invoice_id": "INV-2026-002",
+    "body": "Hi Priya, our accounts team wired $1,850 for the pitch deck graphics this morning. You should see it in your account shortly. Thanks again for turning it around on such short notice!"
+  },
+  {
+    "email_id": "EML-102",
+    "sender_name": "Dr. Elena Rostova",
+    "sender_email": "elena.rostova@nexahealthlabs.com",
+    "client_company": "Nexa Health Labs",
+    "subject": "Partial milestone payment released (INV-2026-004)",
+    "received_date": "2026-08-27",
+    "related_invoice_id": "INV-2026-004",
+    "body": "Hi Priya, just letting you know our accounting team released $3,000 for the first UI milestone on INV-2026-004. The remaining $1,500 balance will be approved once user acceptance testing wraps up on Sept 18th."
+  },
+  {
+    "email_id": "EML-103",
+    "sender_name": "Arthur Pendelton",
+    "sender_email": "apendelton@brightpathacademy.edu",
+    "client_company": "BrightPath Academy",
+    "subject": "Extension request: INV-2026-005 payment delay",
+    "received_date": "2026-08-30",
+    "related_invoice_id": "INV-2026-005",
+    "body": "Dear Priya, sincere apologies for the delay on invoice INV-2026-005 ($1,600) which was due yesterday. Our finance committee meets this coming Tuesday to sign off on autumn disbursements, and we will remit payment immediately after. Thank you for your patience."
+  },
+  {
+    "email_id": "EML-104",
+    "sender_name": "Clara Diaz",
+    "sender_email": "clara@greenrootsorganics.co",
+    "client_company": "GreenRoots Organics",
+    "subject": "Zelle payment sent for social templates",
+    "received_date": "2026-09-01",
+    "related_invoice_id": "INV-2026-006",
+    "body": "Hey Priya! I just sent $950 directly via Zelle for invoice INV-2026-006. Let me know when you see it on your end. The Instagram templates look stunning!"
+  },
+  {
+    "email_id": "EML-105",
+    "sender_name": "Chef Mateo Rossi",
+    "sender_email": "mateo@urbanbitefoodtruck.com",
+    "client_company": "UrbanBite Food Truck",
+    "subject": "Urgent: Duplicate payment sent by accident? Please check & refund",
+    "received_date": "2026-09-03",
+    "related_invoice_id": "INV-2026-007",
+    "body": "Hi Priya! I looked at our Chase online banking statement this morning, and it looks like our bookkeeper initiated two separate transfers of $750 for INV-2026-007 on Sept 2nd and Sept 3rd. Could you check your bank account and please refund the second $750 when you get a chance?"
+  },
+  {
+    "email_id": "EML-106",
+    "sender_name": "Gregory Hayes",
+    "sender_email": "ghayes@pulsedynamics.io",
+    "client_company": "Pulse Dynamics",
+    "subject": "Payment remittance: INV-2026-009",
+    "received_date": "2026-09-05",
+    "related_invoice_id": "INV-2026-009",
+    "body": "Hi Priya, we issued the wire transfer of $3,100 for invoice INV-2026-009 today. Please note that our intermediary bank may have deducted their standard $25 incoming wire fee, so the net credit on your statement will likely show $3,075."
+  },
+  {
+    "email_id": "EML-107",
+    "sender_name": "Sara Chen",
+    "sender_email": "schen@kineticapparel.com",
+    "client_company": "Kinetic Apparel",
+    "subject": "Lookbook invoice payment processed",
+    "received_date": "2026-09-05",
+    "related_invoice_id": "INV-2026-008",
+    "body": "Hi Priya, quick heads-up that our AP team processed ACH payment for invoice INV-2026-008 ($2,800) ahead of next week's due date. Thanks for the quick revisions on the banners!"
+  },
+  {
+    "email_id": "EML-108",
+    "sender_name": "Maya Lin",
+    "sender_email": "mlin@horizonarchitecture.com",
+    "client_company": "Horizon Architecture",
+    "subject": "Quick question on vector formats for monograph",
+    "received_date": "2026-09-05",
+    "related_invoice_id": "INV-2026-010",
+    "body": "Hi Priya, hope you're having a great week! The team is loving the monograph portfolio draft. Could you send over the high-res SVG vector exports for the floorplans whenever you have a chance? No rush on the invoice side — that's queued up for payment next week."
+  },
+  {
+    "email_id": "EML-109",
+    "sender_name": "Kevin Thorne",
+    "sender_email": "kthorne@cloudpeaksaas.io",
+    "client_company": "CloudPeak SaaS",
+    "subject": "Invoice received: INV-2026-012",
+    "received_date": "2026-09-06",
+    "related_invoice_id": "INV-2026-012",
+    "body": "Hey Priya, confirming we received INV-2026-012 for $800 for the landing page assets. It has been routed to our accounts payable team and will be paid within our standard net-14 terms. Have a great weekend!"
+  }
+]

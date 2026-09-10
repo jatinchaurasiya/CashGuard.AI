@@ -7,6 +7,7 @@ You can change settings here without having to edit any agent logic code.
 
 import os
 import logging
+from typing import Any
 
 try:
     from dotenv import load_dotenv
@@ -92,8 +93,14 @@ def get_openrouter_model():
     configured with fallback chain, exponential backoff, and logging
     for the Strands Agents SDK.
     """
-    api_key = OPENROUTER_API_KEY
-    if not api_key:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(override=True)
+    except ImportError:
+        pass
+
+    api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+    if not api_key or api_key == "your_openrouter_api_key_here":
         raise ValueError(
             "OPENROUTER_API_KEY is not set. Please create a .env file based on .env.example "
             "and add your OpenRouter API key."
@@ -105,9 +112,30 @@ def get_openrouter_model():
         raise ImportError(f"Failed to load OpenRouterFallbackModel from llm.py: {e}")
 
     return OpenRouterFallbackModel(
-        model_id=MODEL_ID,
+        model_id=os.getenv("MODEL_ID", MODEL_ID),
         fallback_models=FALLBACK_MODELS,
         retry_delays=RETRY_DELAYS,
         api_key=api_key,
         base_url=OPENROUTER_BASE_URL,
     )
+
+
+def check_api_key_status() -> dict[str, Any]:
+    """Inspects environment and .env file for OpenRouter key."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(override=True)
+    except ImportError:
+        pass
+
+    key = os.getenv("OPENROUTER_API_KEY", "").strip()
+    is_live = bool(key and key != "your_openrouter_api_key_here" and len(key) > 10)
+    has_env_file = os.path.exists(".env")
+
+    return {
+        "is_live": is_live,
+        "masked_key": (key[:9] + "••••••••" + key[-4:]) if is_live else "Not configured",
+        "model_id": os.getenv("MODEL_ID", MODEL_ID),
+        "source": ".env file" if has_env_file else "None (.env file missing)",
+        "has_env_file": has_env_file,
+    }

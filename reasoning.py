@@ -187,20 +187,38 @@ class CashGuardReasoningEngine:
     @classmethod
     def create(cls) -> "CashGuardReasoningEngine":
         """Factory method to initialize with Strands agent if credentials exist."""
-        agent = None
-        if OPENROUTER_API_KEY and OPENROUTER_API_KEY != "your_openrouter_api_key_here":
+        instance = cls(agent=None)
+        instance.reload()
+        return instance
+
+    def reload(self) -> bool:
+        """Dynamically re-checks environment/.env and initializes Strands agent if key exists."""
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(override=True)
+        except ImportError:
+            pass
+
+        import os
+        api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+        if api_key and api_key != "your_openrouter_api_key_here" and len(api_key) > 10:
             try:
                 from strands import Agent
                 model = get_openrouter_model()
-                agent = Agent(
+                self.agent = Agent(
                     model=model,
                     tools=[draft_message],
                     system_prompt=REASONING_SYSTEM_PROMPT,
                 )
-                logger.info("[ReasoningEngine] Strands Agent initialized with OpenRouter model.")
+                logger.info("[ReasoningEngine] Strands Agent successfully connected to OpenRouter live model.")
+                return True
             except Exception as e:
                 logger.warning(f"[ReasoningEngine] Could not initialize live agent ({e}); fallback active.")
-        return cls(agent=agent)
+                self.agent = None
+                return False
+        else:
+            self.agent = None
+            return False
 
     def write_whatsapp_alert(self, exception: dict[str, Any]) -> dict[str, Any]:
         """

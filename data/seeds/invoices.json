@@ -1,0 +1,122 @@
+[
+  {
+    "invoice_id": "INV-2026-001",
+    "client_name": "Apex Fitness Co",
+    "amount": 3200.00,
+    "currency": "USD",
+    "issue_date": "2026-08-01",
+    "due_date": "2026-08-15",
+    "status": "paid",
+    "description": "Full Brand Identity & Logo Guidelines"
+  },
+  {
+    "invoice_id": "INV-2026-002",
+    "client_name": "Solaria Solar Energy",
+    "amount": 1850.00,
+    "currency": "USD",
+    "issue_date": "2026-08-05",
+    "due_date": "2026-08-19",
+    "status": "paid",
+    "description": "Investor Pitch Deck & Clean Tech Infographics"
+  },
+  {
+    "invoice_id": "INV-2026-003",
+    "client_name": "BlueWave Coffee Co.",
+    "amount": 2400.00,
+    "currency": "USD",
+    "issue_date": "2026-08-10",
+    "due_date": "2026-08-24",
+    "status": "paid",
+    "description": "Cold Brew Can Packaging & Carton Design"
+  },
+  {
+    "invoice_id": "INV-2026-004",
+    "client_name": "Nexa Health Labs",
+    "amount": 4500.00,
+    "currency": "USD",
+    "issue_date": "2026-08-12",
+    "due_date": "2026-08-26",
+    "status": "pending",
+    "description": "Clinical Patient Portal UI/UX Redesign (Milestones 1 & 2)"
+  },
+  {
+    "invoice_id": "INV-2026-005",
+    "client_name": "BrightPath Academy",
+    "amount": 1600.00,
+    "currency": "USD",
+    "issue_date": "2026-08-15",
+    "due_date": "2026-08-29",
+    "status": "overdue",
+    "description": "Fall 2026 Academic Catalog & Print Layout"
+  },
+  {
+    "invoice_id": "INV-2026-006",
+    "client_name": "GreenRoots Organics",
+    "amount": 950.00,
+    "currency": "USD",
+    "issue_date": "2026-08-18",
+    "due_date": "2026-09-01",
+    "status": "paid",
+    "description": "Instagram & TikTok Campaign Graphic Templates"
+  },
+  {
+    "invoice_id": "INV-2026-007",
+    "client_name": "UrbanBite Food Truck",
+    "amount": 750.00,
+    "currency": "USD",
+    "issue_date": "2026-08-20",
+    "due_date": "2026-09-03",
+    "status": "pending",
+    "description": "Digital Menu Boards & Vehicle Wrap Vinyl Graphics"
+  },
+  {
+    "invoice_id": "INV-2026-008",
+    "client_name": "Kinetic Apparel",
+    "amount": 2800.00,
+    "currency": "USD",
+    "issue_date": "2026-08-25",
+    "due_date": "2026-09-08",
+    "status": "pending",
+    "description": "Autumn Lookbook Art Direction & E-commerce Banners"
+  },
+  {
+    "invoice_id": "INV-2026-009",
+    "client_name": "Pulse Dynamics",
+    "amount": 3100.00,
+    "currency": "USD",
+    "issue_date": "2026-08-28",
+    "due_date": "2026-09-11",
+    "status": "pending",
+    "description": "Tech Expo Booth Vinyl Displays & Promotional Flyers"
+  },
+  {
+    "invoice_id": "INV-2026-010",
+    "client_name": "Horizon Architecture",
+    "amount": 2200.00,
+    "currency": "USD",
+    "issue_date": "2026-09-01",
+    "due_date": "2026-09-15",
+    "status": "pending",
+    "description": "Monograph Portfolio Layout & Custom Vector Diagrams"
+  },
+  {
+    "invoice_id": "INV-2026-011",
+    "client_name": "Summit Craft Brewery",
+    "amount": 1400.00,
+    "currency": "USD",
+    "issue_date": "2026-09-02",
+    "due_date": "2026-09-16",
+    "status": "pending",
+    "description": "Limited Edition Seasonal IPA Label Collection"
+  },
+  {
+    "invoice_id": "INV-2026-012",
+    "client_name": "CloudPeak SaaS",
+    "amount": 800.00,
+    "currency": "USD",
+    "issue_date": "2026-09-04",
+    "due_date": "2026-09-18",
+    "status": "pending",
+    "description": "Marketing Website Isometric Vector Icons"
+  }
+]
