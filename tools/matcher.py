@@ -111,9 +111,18 @@ def _check_duplicate_claim_in_emails(invoice_id: str, client_name: str, emails: 
         if not is_related:
             continue
 
+        # If email is explicitly a delay or future payment notice, do not treat as an active payment claim
+        is_delay = any(w in full_text for w in ["delay", "extension", "will remit", "will pay", "queued up for payment", "queued up", "no rush"])
+        if is_delay:
+            continue
+
         # Check for duplicate claim vs standard payment claim
         is_dup = any(w in full_text for w in ["duplicate", "twice", "two separate transfers", "second transfer", "refund the second", "refund"])
-        is_claim = any(w in full_text for w in ["already paid", "remitted", "wired", "sent payment", "processed payment", "sent via zelle"])
+        is_claim = any(w in full_text for w in [
+            "already paid", "remitted", "wired", "sent payment", "processed payment", 
+            "sent via zelle", "i paid", "we paid", "have paid", "payment made", 
+            "payment sent", "transferred funds", "payment was sent", "we have transferred"
+        ])
 
         if is_dup:
             return {
@@ -212,10 +221,16 @@ def match_invoices_to_bank_feed(
             if id_match or client_match:
                 candidate_deposits.append(tx)
             else:
-                # Exact amount match fallback only if close date and no other client mentioned
+                # Fallback matching by date proximity and amount closeness
                 tx_d = _parse_date(tx.get("date", ""))
-                if abs(tx["amount_float"] - inv_amount) < 0.01 and tx_d and issue_d and abs((tx_d - issue_d).days) <= 14:
-                    candidate_deposits.append(tx)
+                is_close_date = tx_d and issue_d and abs((tx_d - issue_d).days) <= 14
+                if is_close_date:
+                    # Exact amount match
+                    if abs(tx["amount_float"] - inv_amount) < 0.01:
+                        candidate_deposits.append(tx)
+                    # Close amount match (e.g. wire fee <= $50 or within 20% tolerance)
+                    elif (0 < inv_amount - tx["amount_float"] <= 50.0) or (0.80 * inv_amount <= tx["amount_float"] < inv_amount):
+                        candidate_deposits.append(tx)
 
         # Select best candidate
         best_exact = None
@@ -232,7 +247,8 @@ def match_invoices_to_bank_feed(
                 if best_exact is None:
                     best_exact = tx
             elif tx_amt < inv_amount:
-                if best_partial is None:
+                # Select partial payment closest in value to invoice amount
+                if best_partial is None or abs(tx_amt - inv_amount) < abs(best_partial["amount_float"] - inv_amount):
                     best_partial = tx
 
         # ==============================================================================
@@ -305,6 +321,26 @@ def match_invoices_to_bank_feed(
                 "explanation": (
                     f"Deposit of ${deposit_amt:,.2f} received against invoiced ${inv_amount:,.2f} "
                     f"({tx_id}). Underpayment/variance of ${diff:,.2f}."
+                ),
+            }
+            escalations.append(record)
+            all_results.append(record)
+            continue
+
+        # CASE D0: Client email claims paid, but no matching bank transaction exists (DUPLICATE_CLAIM - Escalate)
+        if email_claim and email_claim["type"] == "payment_sent_claim":
+            record = {
+                "invoice_id": invoice_id,
+                "client_name": client_name,
+                "amount": inv_amount,
+                "status": "DUPLICATE_CLAIM",
+                "resolution": "escalate",
+                "due_date": str(due_d),
+                "matched_transaction_id": None,
+                "email_id": email_claim["email_id"],
+                "explanation": (
+                    f"Client email ({email_claim['sender']}) claims payment of ${inv_amount:,.2f} "
+                    f"was sent ('{email_claim.get('subject')}'), but no matching bank transaction exists in the feed."
                 ),
             }
             escalations.append(record)
