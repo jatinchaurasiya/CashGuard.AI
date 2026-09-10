@@ -92,18 +92,21 @@ def get_openrouter_model():
     Creates and returns a resilient OpenRouterFallbackModel instance
     configured with fallback chain, exponential backoff, and logging
     for the Strands Agents SDK.
+    Prioritizes OS environment variables, then falls back to .env if present.
     """
-    try:
-        from dotenv import load_dotenv
-        load_dotenv(override=True)
-    except ImportError:
-        pass
-
     api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
     if not api_key or api_key == "your_openrouter_api_key_here":
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+            api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+        except ImportError:
+            pass
+
+    if not api_key or api_key == "your_openrouter_api_key_here":
         raise ValueError(
-            "OPENROUTER_API_KEY is not set. Please create a .env file based on .env.example "
-            "and add your OpenRouter API key."
+            "OPENROUTER_API_KEY is not set. Please set the OPENROUTER_API_KEY environment variable "
+            "or create a .env file based on .env.example."
         )
 
     try:
@@ -121,21 +124,27 @@ def get_openrouter_model():
 
 
 def check_api_key_status() -> dict[str, Any]:
-    """Inspects environment and .env file for OpenRouter key."""
-    try:
-        from dotenv import load_dotenv
-        load_dotenv(override=True)
-    except ImportError:
-        pass
-
+    """Inspects OS environment variables and .env file for OpenRouter key."""
     key = os.getenv("OPENROUTER_API_KEY", "").strip()
-    is_live = bool(key and key != "your_openrouter_api_key_here" and len(key) > 10)
+    source = "EC2 / OS Environment Variable" if (key and key != "your_openrouter_api_key_here") else "None"
+
+    if not key or key == "your_openrouter_api_key_here":
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+            key = os.getenv("OPENROUTER_API_KEY", "").strip()
+            if key and key != "your_openrouter_api_key_here":
+                source = ".env file"
+        except ImportError:
+            pass
+
     has_env_file = os.path.exists(".env")
+    is_live = bool(key and key != "your_openrouter_api_key_here" and len(key) > 10)
 
     return {
         "is_live": is_live,
         "masked_key": (key[:9] + "••••••••" + key[-4:]) if is_live else "Not configured",
         "model_id": os.getenv("MODEL_ID", MODEL_ID),
-        "source": ".env file" if has_env_file else "None (.env file missing)",
+        "source": source if is_live else ("None (Unset)" if not has_env_file else ".env file (placeholder)"),
         "has_env_file": has_env_file,
     }

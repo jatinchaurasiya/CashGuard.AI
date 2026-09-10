@@ -4,8 +4,15 @@ strands-agents>=0.1.0
 # OpenAI client - Required by Strands Agents to connect to OpenAI-compatible APIs like OpenRouter
 openai>=1.0.0
 
-# Environment variables management (loads .env files)
+# Environment variables management (loads .env files if present)
 python-dotenv>=1.0.0
 
 # Data modeling and validation
 pydantic>=2.0.0
+
+# Lightweight High-Performance ASGI Web Server (Option A: Clay UI - ~35MB RAM, ideal for t2.micro/t3.micro)
+starlette>=0.30.0
+uvicorn>=0.25.0
+
+# Optional Streamlit Alternative UI (Option B: Streamlit Demo - Port 8501)
+streamlit>=1.30.0

@@ -828,9 +828,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     <!-- Center Action Suite -->
     <div class="nav-actions-center">
-      <button class="btn-clay-scan" onclick="triggerAutonomousScan()" title="Trigger autonomous background reconciliation scan">
+      <button class="btn-clay-scan" onclick="triggerAutonomousScan()" title="Trigger autonomous background reconciliation scan on sample data">
         <span>⚡</span>
-        <span>Run Autonomous Scan</span>
+        <span>Run Demo Scan</span>
       </button>
       <button class="btn-nav-action" onclick="openExplorerModal()" title="Explore raw invoices, bank feeds, and client messages">
         <span>📁</span>
