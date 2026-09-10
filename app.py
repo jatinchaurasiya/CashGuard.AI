@@ -30,7 +30,7 @@ from typing import Any
 import uvicorn
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import HTMLResponse, JSONResponse
+from starlette.responses import HTMLResponse, JSONResponse, FileResponse
 from starlette.routing import Route
 
 from config import check_api_key_status, get_model_id
@@ -840,6 +840,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <span>➕</span>
         <span>Add Entry</span>
       </button>
+      <button class="btn-nav-action" onclick="openModal('archModal')" title="View Visual System Architecture diagram">
+        <span>📐</span>
+        <span>Architecture</span>
+      </button>
     </div>
 
     <!-- Right Telemetry & User -->
@@ -985,6 +989,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </aside>
 
   </main>
+
+  <!-- ========================================================================
+       MODAL: ARCHITECTURE DIAGRAM
+       ======================================================================== -->
+  <div class="modal-overlay" id="archModal" onclick="closeOnOutside(event, 'archModal')">
+    <div class="modal-box" style="max-width: 1200px; width: 95vw;">
+      <div class="modal-header">
+        <div>
+          <h3 style="display: flex; align-items: center; gap: 8px;"><span>📐</span> Visual System Architecture</h3>
+          <p style="font-size: 12px; color: var(--clay-muted); margin-top: 2px;">Strands Agent Core Orchestration • OpenRouter LLM Gateway • Human Approval Gate</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <a href="/architecture" target="_blank" class="btn-clay-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+            <span>↗</span> Open Full Screen
+          </a>
+          <button class="modal-close-btn" onclick="closeModal('archModal')">✕</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 12px; background: #090d16; border-radius: var(--rounded-md); text-align: center; overflow: auto; max-height: 75vh;">
+        <img src="/architecture-diagram.png" alt="CashGuard.AI System Architecture" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.6);">
+      </div>
+    </div>
+  </div>
 
   <!-- ========================================================================
        MODAL: API KEY & ENGINE STATUS
@@ -2133,8 +2160,19 @@ async def get_audit_log(request: Request) -> JSONResponse:
     return JSONResponse({"entries": list(reversed(entries))})
 
 
+async def get_architecture_page(request: Request) -> HTMLResponse:
+    with open("architecture-diagram.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(f.read())
+
+
+async def get_architecture_image(request: Request) -> FileResponse:
+    return FileResponse("architecture-diagram.png", media_type="image/png")
+
+
 routes = [
     Route("/", endpoint=get_index, methods=["GET"]),
+    Route("/architecture", endpoint=get_architecture_page, methods=["GET"]),
+    Route("/architecture-diagram.png", endpoint=get_architecture_image, methods=["GET"]),
     Route("/api/status", endpoint=get_status, methods=["GET"]),
     Route("/api/status/reload", endpoint=post_status_reload, methods=["POST"]),
     Route("/api/feeds", endpoint=get_feeds, methods=["GET"]),

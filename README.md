@@ -36,7 +36,13 @@ When an invoice is paid short by $25 (due to wire or bank fees), paid late, or d
 CashGuard.AI separates deterministic business logic from probabilistic LLM reasoning. Routine arithmetic (amounts, dates, token matching) runs in fast, zero-cost deterministic code, while LLM intelligence is reserved for natural-language alert synthesis, intent parsing, and tone-tailored correspondence.
 
 ### Architecture Diagram
-> *The standalone Mermaid specification is saved at [`architecture-diagram.mermaid`](architecture-diagram.mermaid).*
+
+![CashGuard.AI Full System Architecture](architecture-diagram.png)
+
+> *The standalone Mermaid specification is also available at [`architecture-diagram.mermaid`](architecture-diagram.mermaid) and the interactive visual page at [`architecture-diagram.html`](architecture-diagram.html).*
+
+<details>
+<summary><b>View Raw Mermaid Source</b></summary>
 
 ```mermaid
 flowchart TD
@@ -114,6 +120,7 @@ flowchart TD
     class GATE,SEND,CANCEL safe;
     class LOG,SILENT log;
 ```
+</details>
 
 ---
 
