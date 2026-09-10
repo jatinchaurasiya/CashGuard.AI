@@ -1,0 +1,116 @@
+flowchart TD
+    %% =========================================================================
+    %% CashGuard.AI Architecture Diagram
+    %% AWS "Agents for Humans" Hackathon — Professional Agents Track
+    %% =========================================================================
+
+    subgraph SOURCES["1. Financial Data Sources (Read-Only Feeds)"]
+        INV["📄 Invoices Feed\n(data/invoices.json)\nAmounts, Due Dates, Client Terms"]
+        BNK["🏦 Bank Statement CSV\n(data/bank_feed.csv)\nSettled Credits, Debits, Wire References"]
+        EML["✉️ Client Communications\n(data/client_emails.json)\nPayment Promises, Dispute Notes, Claims"]
+    end
+
+    subgraph STRANDS_CORE["2. AWS Strands Agent Core (Orchestration Engine)"]
+        
+        subgraph INGEST_LAYER["Ingestion & Monitoring"]
+            MON["🔍 Monitor Tool\n(tools/monitor.py)\nIngests financial feeds into structured state"]
+        end
+
+        subgraph DETERMINISTIC_RECON["Deterministic Reconciliation Engine"]
+            MAT["⚖️ Matching Tool\n(tools/matcher.py)\nArithmetic verification, date proximity & fuzzy token correlation"]
+        end
+
+        subgraph DECISION_SPLIT["Autonomous Decision Split"]
+            direction TB
+            SILENT_PATH["🤫 Silent Background Resolution\n(Exact matches & invoices within standard terms)\nZero freelancer disruption • 100% autonomous"]
+            EXCEPTIONS["⚠️ Exception Escalations:\n• PARTIAL: Underpayments & wire fee deductions\n• UNMATCHED: Overdue unpaid invoices\n• DUPLICATE_CLAIM: Ghost transfers & refund claims"]
+        end
+
+        subgraph PRIORITIZATION["Risk Prioritization"]
+            PRIO["📊 Cash-Impact Prioritizer\n(tools/prioritizer.py)\nDynamic Ranking Formula:\nImpact Score = (Amount at Risk) × (Days Overdue)"]
+        end
+
+        subgraph REASONING["Reasoning & Intelligence Layer"]
+            REASON_ENG["🧠 CashGuard Reasoning Engine\n(reasoning.py)\nSynthesizes conversational alerts & parses user intent"]
+            
+            subgraph OPENROUTER["Distinguishing Technical Choice: OpenRouter LLM Gateway"]
+                OR_ROUTER["🌐 OpenRouter API Gateway\n(https://openrouter.ai/api/v1)"]
+                PRIMARY_LLM["⚡ Primary Model: openrouter/free\nZero-cost meta-router with structured tool-calling"]
+                FALLBACK_CHAIN["🔄 Resilient Fallback Chain\nLlama 3.3 70B • Gemini 2.0 Flash • Mistral Small\nExponential backoff for 429 rate limit resilience"]
+            end
+        end
+
+        subgraph ACTION_STAGING["Action Staging"]
+            DRAFT_TOOL["📝 Action Drafter Tool\n(tools/drafter.py)\nStructured draft_message tool-call\nEnforces non-dispatch guarantee: sent = false"]
+        end
+
+        subgraph GOVERNANCE["Human Governance & Safety"]
+            GATE["🛑 Human-in-the-Loop Approval Gate\n(tools/approval_gate.py)\nBlocks dispatch until explicit human authorization"]
+        end
+    end
+
+    subgraph INTERFACE["3. Human-in-the-Loop Interface (Clay UI / WhatsApp Web)"]
+        UI_ALERT["💬 Plain-Language Alert\n(Concise summary of discrepancy & context)"]
+        UI_USER["👤 Freelancer Reply\n(Natural language instruction, e.g. 'waive wire fee', 'refuse refund')"]
+        UI_DRAFT_CARD["📋 Staged Action Card (Clay Feature Card)\nClient email preview with subject, recipient & body\nInline 'Edit Draft' capability"]
+        UI_DECISION["🔘 Decision Controls:\n• Approve & Dispatch Email\n• Reject / Cancel Action"]
+    end
+
+    subgraph AUDIT["4. Responsible AI Audit Logger (Dual Format Trail)"]
+        LOGGER["📋 Append-Only Audit Logger\n(audit_logger.py)"]
+        JSONL_FILE["📁 data/audit_log.jsonl\nMachine-readable ISO timestamps, event UUIDs & parameters"]
+        MD_FILE["📑 data/audit_log.md\nHuman-readable executive table with ethical justifications:\nNoise Reduction • Cash Flow Protection • Harm Prevention • Human Oversight"]
+    end
+
+    %% Data flow connections
+    INV --> MON
+    BNK --> MON
+    EML --> MON
+
+    MON --> MAT
+
+    MAT -->|High Confidence Match| SILENT_PATH
+    MAT -->|Discrepancy / Ambiguity| EXCEPTIONS
+
+    EXCEPTIONS --> PRIO
+    PRIO -->|Ranked Order: Highest Financial Stakes First| REASON_ENG
+
+    REASON_ENG <-->|Tool Calling & Prompt Synthesis| OR_ROUTER
+    OR_ROUTER --> PRIMARY_LLM
+    PRIMARY_LLM -.->|On 429 Rate Limit| FALLBACK_CHAIN
+
+    REASON_ENG -->|WhatsApp-style alert message| UI_ALERT
+    UI_ALERT --> UI_USER
+    UI_USER -->|Plain-language instruction| REASON_ENG
+
+    REASON_ENG -->|Structured tool call| DRAFT_TOOL
+    DRAFT_TOOL -->|Staged uncommitted draft| UI_DRAFT_CARD
+    UI_DRAFT_CARD --> UI_DECISION
+
+    UI_DECISION -->|Human authorization decision| GATE
+
+    %% Audit logging connections (dotted lines)
+    SILENT_PATH -.->|Silent resolution record| LOGGER
+    EXCEPTIONS -.->|Exception escalation record| LOGGER
+    DRAFT_TOOL -.->|Draft staged record| LOGGER
+    GATE -.->|Approval / rejection record| LOGGER
+
+    LOGGER --> JSONL_FILE
+    LOGGER --> MD_FILE
+
+    %% Styling and Class Definitions
+    classDef sourceStyle fill:#fffaf0,stroke:#e8b94a,stroke-width:2px,color:#0a0a0a;
+    classDef strandsStyle fill:#faf5e8,stroke:#0a0a0a,stroke-width:2px,color:#0a0a0a;
+    classDef openRouterStyle fill:#f5f0e0,stroke:#ff4d8b,stroke-width:2px,color:#0a0a0a;
+    classDef safeStyle fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#991b1b;
+    classDef uiStyle fill:#fffaf0,stroke:#1a3a3a,stroke-width:2px,color:#0a0a0a;
+    classDef auditStyle fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#14532d;
+    classDef silentStyle fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#065f46;
+
+    class INV,BNK,EML sourceStyle;
+    class MON,MAT,PRIO,DRAFT_TOOL strandsStyle;
+    class OR_ROUTER,PRIMARY_LLM,FALLBACK_CHAIN,REASON_ENG openRouterStyle;
+    class GATE safeStyle;
+    class UI_ALERT,UI_USER,UI_DRAFT_CARD,UI_DECISION uiStyle;
+    class LOGGER,JSONL_FILE,MD_FILE auditStyle;
+    class SILENT_PATH silentStyle;
